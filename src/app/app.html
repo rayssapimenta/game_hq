@@ -188,6 +188,14 @@
           }
         </div>
 
+        @if (productsLoading) {
+          <div class="alert alert-info" role="status">Carregando produtos...</div>
+        } @else if (productsError) {
+          <div class="alert alert-danger" role="alert">
+            {{ productsError }}
+            <button type="button" class="btn btn-link p-0 ms-2" (click)="loadProducts()">Tentar novamente</button>
+          </div>
+        } @else {
         <!-- Grid de Cards de Produtos -->
         <div id="productsGrid" class="row g-4">
           @for (product of filteredProducts; track product.id) {
@@ -225,7 +233,12 @@
                     </div>
 
                     <div class="d-grid gap-2">
-                      <button type="button" class="btn btn-ghq-green btn-sm py-2" (click)="addToCart(product)">
+                      <button
+                        type="button"
+                        class="btn btn-ghq-green btn-sm py-2"
+                        [disabled]="checkoutLoading || getCartQuantity(product.id) >= 10"
+                        (click)="addToCart(product)"
+                      >
                         Adicionar ao Carrinho
                       </button>
                       <button
@@ -245,16 +258,17 @@
         </div>
 
         <!-- Estado vazio caso a busca não encontre resultados -->
-        @if (filteredProducts.length === 0) {
-        <div id="emptyProductsState" class="text-center py-5 px-3 rounded-4" style="background-color: #F8F9FA; border: 1px solid #E5E7EB;">
-          <h3 class="h5 fw-bold mb-2" style="color: #0B0E14;">Nenhum produto encontrado</h3>
-          <p class="text-muted mb-3">
-            Não encontramos itens correspondentes ao filtro ou termo pesquisado.
-          </p>
-          <button type="button" id="resetFiltersBtn" class="btn btn-ghq-blue px-4" (click)="resetFilters()">
-            Limpar Filtros e Busca
-          </button>
-        </div>
+          @if (filteredProducts.length === 0) {
+            <div id="emptyProductsState" class="text-center py-5 px-3 rounded-4" style="background-color: #F8F9FA; border: 1px solid #E5E7EB;">
+              <h3 class="h5 fw-bold mb-2" style="color: #0B0E14;">Nenhum produto encontrado</h3>
+              <p class="text-muted mb-3">
+                Não encontramos itens correspondentes ao filtro ou termo pesquisado.
+              </p>
+              <button type="button" id="resetFiltersBtn" class="btn btn-ghq-blue px-4" (click)="resetFilters()">
+                Limpar Filtros e Busca
+              </button>
+            </div>
+          }
         }
       </div>
     </section>
@@ -455,6 +469,7 @@
               <h3 class="h5 fw-bold mb-1" style="color: #0B0E14;">Envie uma Mensagem</h3>
               <p class="small text-muted mb-4">
                 Preencha os campos abaixo e nossa equipe responderá de forma objetiva.
+                Usaremos seus dados apenas para responder à solicitação; não envie dados de pagamento.
               </p>
 
               <!-- Alerta dinâmico Bootstrap para feedback sem pop-up bloqueante -->
@@ -557,8 +572,8 @@
                   </div>
 
                   <div class="col-12 pt-1">
-                    <button type="submit" class="btn btn-ghq-blue px-4 py-2.5">
-                      Enviar Mensagem
+                    <button type="submit" class="btn btn-ghq-blue px-4 py-2.5" [disabled]="contactSubmitting">
+                      {{ contactSubmitting ? 'Enviando...' : 'Enviar Mensagem' }}
                     </button>
                   </div>
                 </div>
@@ -646,6 +661,7 @@
                     <button
                       type="button"
                       class="btn btn-outline-secondary px-2"
+                      [disabled]="checkoutLoading"
                       (click)="updateCartQuantity(item.product.id, -1)"
                       aria-label="Diminuir quantidade"
                     >−</button>
@@ -653,6 +669,7 @@
                     <button
                       type="button"
                       class="btn btn-outline-secondary px-2"
+                      [disabled]="checkoutLoading || item.quantity >= 10"
                       (click)="updateCartQuantity(item.product.id, 1)"
                       aria-label="Aumentar quantidade"
                     >+</button>
@@ -660,6 +677,7 @@
                   <button
                     type="button"
                     class="btn btn-link btn-sm text-decoration-none p-0 fw-semibold"
+                    [disabled]="checkoutLoading"
                     style="color: #EF4444;"
                     (click)="removeFromCart(item.product.id)"
                   >Remover</button>
@@ -682,10 +700,18 @@
               class="form-control text-uppercase"
               name="coupon"
               [(ngModel)]="couponInput"
+              (ngModelChange)="couponInputChanged()"
+              [disabled]="couponLoading || checkoutLoading"
               placeholder="Ex: GAME10"
               aria-label="Código do cupom de desconto"
             />
-            <button type="button" id="applyCouponBtn" class="btn btn-ghq-blue" (click)="applyCoupon()">Aplicar</button>
+            <button
+              type="button"
+              id="applyCouponBtn"
+              class="btn btn-ghq-blue"
+              [disabled]="couponLoading"
+              (click)="applyCoupon()"
+            >{{ couponLoading ? 'Validando...' : 'Aplicar' }}</button>
           </div>
           @if (couponFeedback) {
             <div
@@ -703,7 +729,7 @@
         </div>
         @if (discount > 0) {
           <div id="discountRow" class="d-flex justify-content-between small fw-semibold mb-1" style="color: #10B981;">
-            <span>Desconto (GAME10 — 10%)</span>
+            <span>Desconto ({{ appliedCouponCode }} — {{ discountPercent }}%)</span>
             <span id="cartDiscount">- {{ formatCurrency(discount) }}</span>
           </div>
         }
@@ -714,7 +740,13 @@
 
         <!-- Feedback visual ao finalizar compra -->
         @if (checkoutFeedback) {
-          <div id="checkoutFeedback" class="alert alert-success py-2 px-3 small mb-2" role="alert">
+          <div
+            id="checkoutFeedback"
+            class="alert py-2 px-3 small mb-2"
+            [class.alert-danger]="checkoutFeedbackIsError"
+            [class.alert-success]="!checkoutFeedbackIsError"
+            role="alert"
+          >
             {{ checkoutFeedback }}
           </div>
         }
@@ -723,10 +755,10 @@
           type="button"
           id="checkoutBtn"
           class="btn btn-ghq-green w-100 py-2"
-          [disabled]="cart.length === 0"
+          [disabled]="cart.length === 0 || checkoutLoading || couponLoading"
           (click)="checkout()"
         >
-          Finalizar Pedido
+          {{ checkoutLoading ? 'Registrando pedido...' : 'Finalizar Pedido' }}
         </button>
       </div>
     </div>

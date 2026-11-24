@@ -10,6 +10,9 @@
 /node_modules
 npm-debug.log
 yarn-error.log
+/server/data/*.sqlite
+/server/data/*.sqlite-shm
+/server/data/*.sqlite-wal
 
 # IDEs and editors
 .idea/
