@@ -1,0 +1,291 @@
+/* ==========================================================================
+       SISTEMA DE CORES ESTRITO — GAME HQ
+       Permitidas: Preto (#0B0E14), Azul (#0055FF), Branco (#FFFFFF),
+                   Cinza Claro (#F8F9FA), Cinza Escuro (#1F2937),
+                   Verde (#10B981) e Vermelho (#EF4444).
+       Proibidas: Rosa, amarelo, laranja, roxo, ciano, bege e marrom.
+       ========================================================================== */
+    :root {
+      --ghq-black: #0B0E14;
+      --ghq-navy: #0D1B2A;
+      --ghq-blue: #0055FF;
+      --ghq-blue-hover: #0041C4;
+      --ghq-white: #FFFFFF;
+      --ghq-gray-bg: #F8F9FA;
+      --ghq-gray-text: #1F2937;
+      --ghq-gray-muted: #6B7280;
+      --ghq-border: #E5E7EB;
+      --ghq-green: #10B981;
+      --ghq-green-hover: #059669;
+      --ghq-red: #EF4444;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, 'Roboto', sans-serif;
+      background-color: var(--ghq-white);
+      color: var(--ghq-gray-text);
+      overflow-x: hidden;
+    }
+
+    /* Navbar fixa minimalista */
+    .ghq-navbar {
+      background-color: var(--ghq-black);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .ghq-navbar .nav-link {
+      color: rgba(255, 255, 255, 0.85);
+      font-weight: 500;
+      font-size: 0.925rem;
+      transition: color 0.15s ease;
+    }
+
+    .ghq-navbar .nav-link:hover,
+    .ghq-navbar .nav-link:focus {
+      color: var(--ghq-white);
+    }
+
+    /* Campo de busca na navbar */
+    .ghq-search-input {
+      background-color: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: var(--ghq-white);
+      border-radius: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .ghq-search-input::placeholder {
+      color: rgba(255, 255, 255, 0.55);
+    }
+
+    .ghq-search-input:focus {
+      background-color: rgba(255, 255, 255, 0.12);
+      border-color: var(--ghq-blue);
+      color: var(--ghq-white);
+      box-shadow: 0 0 0 0.2rem rgba(0, 85, 255, 0.28);
+    }
+
+    /* Botões personalizados da marca */
+    .btn-ghq-blue {
+      background-color: var(--ghq-blue);
+      border-color: var(--ghq-blue);
+      color: var(--ghq-white);
+      font-weight: 600;
+      border-radius: 0.5rem;
+      transition: background-color 0.15s ease, transform 0.1s ease;
+    }
+
+    .btn-ghq-blue:hover,
+    .btn-ghq-blue:focus {
+      background-color: var(--ghq-blue-hover);
+      border-color: var(--ghq-blue-hover);
+      color: var(--ghq-white);
+    }
+
+    .btn-ghq-green {
+      background-color: var(--ghq-green);
+      border-color: var(--ghq-green);
+      color: var(--ghq-white);
+      font-weight: 600;
+      border-radius: 0.5rem;
+      transition: background-color 0.15s ease;
+    }
+
+    .btn-ghq-green:hover,
+    .btn-ghq-green:focus {
+      background-color: var(--ghq-green-hover);
+      border-color: var(--ghq-green-hover);
+      color: var(--ghq-white);
+    }
+
+    /* Hero Banner (Preto Profundo + Azul Tecnológico) */
+    .ghq-hero {
+      background: linear-gradient(135deg, var(--ghq-black) 0%, #091836 60%, var(--ghq-blue) 140%);
+      color: var(--ghq-white);
+      padding-top: 6.5rem;
+      padding-bottom: 4.5rem;
+    }
+
+    .ghq-hero-frame {
+      border-radius: 1rem;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background-color: var(--ghq-black);
+    }
+
+    .ghq-hero-frame img {
+      width: 100%;
+      height: 360px;
+      object-fit: cover;
+      display: block;
+    }
+
+    @media (max-width: 767.98px) {
+      .ghq-hero-frame img {
+        height: 240px;
+      }
+    }
+
+    /* Botões de Filtro de Categoria */
+    .ghq-filter-btn {
+      border: 1px solid var(--ghq-border);
+      background-color: var(--ghq-white);
+      color: var(--ghq-gray-text);
+      font-weight: 500;
+      font-size: 0.9rem;
+      border-radius: 0.5rem;
+      padding: 0.5rem 1rem;
+      transition: all 0.15s ease;
+    }
+
+    .ghq-filter-btn:hover {
+      border-color: var(--ghq-blue);
+      color: var(--ghq-blue);
+    }
+
+    .ghq-filter-btn.active {
+      background-color: var(--ghq-blue);
+      border-color: var(--ghq-blue);
+      color: var(--ghq-white);
+      font-weight: 600;
+    }
+
+    /* Cards de Produto Minimalistas */
+    .ghq-product-card {
+      background-color: var(--ghq-white);
+      border: 1px solid var(--ghq-border);
+      border-radius: 0.875rem;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .ghq-product-card:hover {
+      border-color: var(--ghq-blue);
+      box-shadow: 0 12px 24px -10px rgba(11, 14, 20, 0.12);
+      transform: translateY(-2px);
+    }
+
+    .ghq-product-img-wrap {
+      position: relative;
+      background-color: var(--ghq-gray-bg);
+      border-bottom: 1px solid var(--ghq-border);
+      border-top-left-radius: 0.875rem;
+      border-top-right-radius: 0.875rem;
+      overflow: hidden;
+      height: 210px;
+    }
+
+    .ghq-product-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.25s ease;
+    }
+
+    .ghq-product-card:hover .ghq-product-img-wrap img {
+      transform: scale(1.03);
+    }
+
+    /* Badges de Estoque (Verde) e Oferta (Vermelho) */
+    .badge-stock {
+      background-color: var(--ghq-green);
+      color: var(--ghq-white);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      padding: 0.35rem 0.6rem;
+      border-radius: 0.375rem;
+    }
+
+    .badge-offer {
+      background-color: var(--ghq-red);
+      color: var(--ghq-white);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      padding: 0.35rem 0.6rem;
+      border-radius: 0.375rem;
+    }
+
+    .ghq-specs-box {
+      background-color: var(--ghq-gray-bg);
+      border: 1px solid var(--ghq-border);
+      border-radius: 0.5rem;
+      font-size: 0.82rem;
+      color: var(--ghq-gray-text);
+      padding: 0.55rem 0.75rem;
+    }
+
+    /* Seção Missão, Visão e Valores */
+    .ghq-mission-section {
+      background: linear-gradient(180deg, var(--ghq-black) 0%, #09152E 100%);
+      color: var(--ghq-white);
+    }
+
+    .ghq-pillar-card {
+      background-color: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 0.875rem;
+      height: 100%;
+    }
+
+    /* Cartão de informações de contato */
+    .ghq-contact-card {
+      background-color: var(--ghq-gray-bg);
+      border: 1px solid var(--ghq-border);
+      border-radius: 0.875rem;
+    }
+
+    .ghq-social-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.55rem 1rem;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-decoration: none;
+      transition: all 0.15s ease;
+    }
+
+    .ghq-social-facebook {
+      background-color: var(--ghq-blue);
+      color: var(--ghq-white);
+    }
+
+    .ghq-social-facebook:hover {
+      background-color: var(--ghq-blue-hover);
+      color: var(--ghq-white);
+    }
+
+    .ghq-social-instagram {
+      background-color: var(--ghq-black);
+      color: var(--ghq-white);
+    }
+
+    .ghq-social-instagram:hover {
+      background-color: var(--ghq-gray-text);
+      color: var(--ghq-white);
+    }
+
+    /* Footer */
+    .ghq-footer {
+      background-color: var(--ghq-black);
+      color: rgba(255, 255, 255, 0.75);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Toast discreto não invasivo */
+    .ghq-toast {
+      background-color: var(--ghq-black);
+      color: var(--ghq-white);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 0.625rem;
+    }
+  
