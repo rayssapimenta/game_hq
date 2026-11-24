@@ -1,32 +1,4 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GAME HQ — Eletrônicos, PC Gamer, Notebooks e Jogos</title>
-
-  <!-- Bootstrap 5.3 CSS via CDN -->
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
-    crossorigin="anonymous"
-  />
-
-  <!-- Google Fonts: Inter (Sans-serif limpa e legível) -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-    rel="stylesheet"
-  />
-
-  
-  <link rel="stylesheet" href="css/styles.css" />
-</head>
-<body>
-
-  <!-- ========================================================================
+<!-- ========================================================================
        1. HEADER / NAVBAR FIXA NO TOPO
        ======================================================================== -->
   <header>
@@ -47,8 +19,7 @@
           <button
             type="button"
             class="btn btn-ghq-blue position-relative d-inline-flex align-items-center gap-2 px-3 py-2"
-            data-bs-toggle="offcanvas"
-            data-bs-target="#cartOffcanvas"
+            (click)="cartOpen = true"
             aria-controls="cartOffcanvas"
             aria-label="Abrir carrinho de compras"
           >
@@ -62,16 +33,15 @@
               id="cartBadgeCount"
               class="badge rounded-pill"
               style="background-color: #10B981; color: #FFFFFF; font-size: 0.75rem;"
-            >0</span>
+            >{{ cartCount }}</span>
           </button>
 
           <button
             class="navbar-toggler border-secondary"
             type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#mainNavbarContent"
+            (click)="mobileMenuOpen = !mobileMenuOpen"
             aria-controls="mainNavbarContent"
-            aria-expanded="false"
+            [attr.aria-expanded]="mobileMenuOpen"
             aria-label="Alternar navegação"
           >
             <span class="navbar-toggler-icon"></span>
@@ -79,7 +49,7 @@
         </div>
 
         <!-- Links de navegação + Busca em tempo real -->
-        <div class="collapse navbar-collapse order-lg-2 mt-3 mt-lg-0" id="mainNavbarContent">
+        <div class="collapse navbar-collapse order-lg-2 mt-3 mt-lg-0" [class.show]="mobileMenuOpen" id="mainNavbarContent">
           <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3 gap-lg-2">
             <li class="nav-item">
               <a class="nav-link" href="#inicio">Início</a>
@@ -96,7 +66,7 @@
           </ul>
 
           <!-- Barra de busca funcional em tempo real -->
-          <form class="d-flex me-lg-3" role="search" onsubmit="event.preventDefault();">
+          <form class="d-flex me-lg-3" role="search" (submit)="$event.preventDefault()">
             <div class="input-group">
               <span class="input-group-text bg-transparent border-secondary text-white-50" style="border-right: 0;">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -109,6 +79,8 @@
                 type="search"
                 class="form-control ghq-search-input"
                 style="border-left: 0;"
+                name="search"
+                [(ngModel)]="searchQuery"
                 placeholder="Buscar PC, notebook, jogo..."
                 aria-label="Buscar produtos em tempo real"
               />
@@ -170,7 +142,7 @@
               <img
                 src="https://images.unsplash.com/photo-1593640408182-31c70c8268f5?auto=format&fit=crop&w=1100&q=85"
                 alt="Setup gamer moderno com gabinete iluminado, monitor widescreen e periféricos de alta precisão"
-                onerror="this.onerror=null;this.src='https://placehold.co/900x540/0B0E14/FFFFFF?text=GAME+HQ+SETUP';"
+                (error)="onImageError($event)"
               />
             </div>
           </div>
@@ -199,35 +171,91 @@
 
           <div class="col-lg-6 text-lg-end">
             <span id="productsCounterText" class="small text-muted fw-medium">
-              Exibindo 8 produtos
+              Exibindo {{ filteredProducts.length }} {{ filteredProducts.length === 1 ? 'produto' : 'produtos' }}
             </span>
           </div>
         </div>
 
         <!-- Filtros por categoria em botões limpos -->
         <div class="d-flex flex-wrap gap-2 mb-4" role="group" aria-label="Filtrar produtos por categoria">
-          <button type="button" class="ghq-filter-btn active" data-category="Todos">Todos</button>
-          <button type="button" class="ghq-filter-btn" data-category="PC Gamer">PC Gamer</button>
-          <button type="button" class="ghq-filter-btn" data-category="Notebooks">Notebooks</button>
-          <button type="button" class="ghq-filter-btn" data-category="Smartphones">Smartphones</button>
-          <button type="button" class="ghq-filter-btn" data-category="Jogos & Consoles">Jogos &amp; Consoles</button>
+          @for (category of categories; track category) {
+            <button
+              type="button"
+              class="ghq-filter-btn"
+              [class.active]="activeCategory === category"
+              (click)="activeCategory = category"
+            >{{ category }}</button>
+          }
         </div>
 
         <!-- Grid de Cards de Produtos -->
         <div id="productsGrid" class="row g-4">
-          <!-- Renderizado dinamicamente via JavaScript -->
+          @for (product of filteredProducts; track product.id) {
+            <div class="col-12 col-sm-6 col-lg-3">
+              <article class="ghq-product-card">
+                <div class="ghq-product-img-wrap">
+                  <span
+                    class="position-absolute top-0 end-0 m-2 shadow-sm"
+                    [class.badge-offer]="product.badgeType === 'offer'"
+                    [class.badge-stock]="product.badgeType === 'stock'"
+                  >{{ product.badgeText }}</span>
+                  <img
+                    [src]="product.image"
+                    [alt]="product.name"
+                    loading="lazy"
+                    (error)="onImageError($event)"
+                  />
+                </div>
+
+                <div class="p-3 d-flex flex-column flex-grow-1 justify-content-between">
+                  <div>
+                    <div class="small fw-semibold mb-1" style="color: #0055FF;">{{ product.category }}</div>
+                    <h3 class="h6 fw-bold mb-2" style="color: #0B0E14;">{{ product.name }}</h3>
+                    <div class="ghq-specs-box mb-3">{{ product.shortSpecs }}</div>
+                  </div>
+
+                  <div>
+                    <div class="mb-3">
+                      @if (product.oldPrice) {
+                        <div class="small text-muted text-decoration-line-through">{{ formatCurrency(product.oldPrice) }}</div>
+                      } @else {
+                        <div class="small text-muted">À vista ou parcelado</div>
+                      }
+                      <div class="fs-5 fw-bold" style="color: #0B0E14;">{{ formatCurrency(product.price) }}</div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                      <button type="button" class="btn btn-ghq-green btn-sm py-2" (click)="addToCart(product)">
+                        Adicionar ao Carrinho
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary btn-sm fw-medium"
+                        style="border-radius: 0.5rem;"
+                        (click)="openProductDetails(product)"
+                      >
+                        Detalhes Rápidos
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            </div>
+          }
         </div>
 
         <!-- Estado vazio caso a busca não encontre resultados -->
-        <div id="emptyProductsState" class="text-center py-5 px-3 rounded-4 d-none" style="background-color: #F8F9FA; border: 1px solid #E5E7EB;">
+        @if (filteredProducts.length === 0) {
+        <div id="emptyProductsState" class="text-center py-5 px-3 rounded-4" style="background-color: #F8F9FA; border: 1px solid #E5E7EB;">
           <h3 class="h5 fw-bold mb-2" style="color: #0B0E14;">Nenhum produto encontrado</h3>
           <p class="text-muted mb-3">
             Não encontramos itens correspondentes ao filtro ou termo pesquisado.
           </p>
-          <button type="button" id="resetFiltersBtn" class="btn btn-ghq-blue px-4">
+          <button type="button" id="resetFiltersBtn" class="btn btn-ghq-blue px-4" (click)="resetFilters()">
             Limpar Filtros e Busca
           </button>
         </div>
+        }
       </div>
     </section>
 
@@ -430,20 +458,34 @@
               </p>
 
               <!-- Alerta dinâmico Bootstrap para feedback sem pop-up bloqueante -->
-              <div id="contactFeedbackAlert" class="alert d-none" role="alert"></div>
+              @if (contactFeedback) {
+                <div
+                  id="contactFeedbackAlert"
+                  class="alert"
+                  [class.alert-danger]="contactFeedbackIsError"
+                  [class.alert-success]="!contactFeedbackIsError"
+                  role="alert"
+                >{{ contactFeedback }}</div>
+              }
 
-              <form id="contactForm" novalidate>
+              <form id="contactForm" #contactForm="ngForm" (ngSubmit)="submitContact(contactForm)" novalidate>
                 <div class="row g-3">
                   <div class="col-md-6">
                     <label for="contactName" class="form-label fw-semibold small">Nome completo *</label>
                     <input
                       type="text"
                       class="form-control"
+                      [class.is-invalid]="contactSubmitted && !isContactNameValid()"
                       id="contactName"
+                      name="contactName"
+                      [(ngModel)]="contact.name"
                       placeholder="Ex: Lucas Almeida"
                       required
+                      minlength="3"
                     />
-                    <div class="invalid-feedback">Por favor, informe seu nome completo (mínimo 3 caracteres).</div>
+                    @if (contactSubmitted && !isContactNameValid()) {
+                      <div class="invalid-feedback d-block">Por favor, informe seu nome completo (mínimo 3 caracteres).</div>
+                    }
                   </div>
 
                   <div class="col-md-6">
@@ -451,11 +493,16 @@
                     <input
                       type="email"
                       class="form-control"
+                      [class.is-invalid]="contactSubmitted && !isContactEmailValid()"
                       id="contactEmail"
+                      name="contactEmail"
+                      [(ngModel)]="contact.email"
                       placeholder="seuemail@exemplo.com.br"
                       required
                     />
-                    <div class="invalid-feedback">Informe um endereço de e-mail válido.</div>
+                    @if (contactSubmitted && !isContactEmailValid()) {
+                      <div class="invalid-feedback d-block">Informe um endereço de e-mail válido.</div>
+                    }
                   </div>
 
                   <div class="col-md-6">
@@ -464,32 +511,49 @@
                       type="tel"
                       class="form-control"
                       id="contactPhone"
+                      name="contactPhone"
+                      [(ngModel)]="contact.phone"
                       placeholder="(11) 99999-9999"
                     />
                   </div>
 
                   <div class="col-md-6">
                     <label for="contactSubject" class="form-label fw-semibold small">Assunto *</label>
-                    <select class="form-select" id="contactSubject" required>
+                    <select
+                      class="form-select"
+                      [class.is-invalid]="contactSubmitted && !contact.subject"
+                      id="contactSubject"
+                      name="contactSubject"
+                      [(ngModel)]="contact.subject"
+                      required
+                    >
                       <option value="">Selecione um assunto...</option>
                       <option value="Orçamento de PC Gamer">Orçamento de PC Gamer</option>
                       <option value="Dúvida sobre Notebooks ou Smartphones">Dúvida sobre Notebooks ou Smartphones</option>
                       <option value="Disponibilidade de Jogos e Consoles">Disponibilidade de Jogos e Consoles</option>
                       <option value="Suporte e Garantia">Suporte e Garantia</option>
                     </select>
-                    <div class="invalid-feedback">Selecione o assunto do atendimento.</div>
+                    @if (contactSubmitted && !contact.subject) {
+                      <div class="invalid-feedback d-block">Selecione o assunto do atendimento.</div>
+                    }
                   </div>
 
                   <div class="col-12">
                     <label for="contactMessage" class="form-label fw-semibold small">Mensagem *</label>
                     <textarea
                       class="form-control"
+                      [class.is-invalid]="contactSubmitted && !isContactMessageValid()"
                       id="contactMessage"
+                      name="contactMessage"
+                      [(ngModel)]="contact.message"
                       rows="4"
                       placeholder="Descreva o equipamento desejado ou sua dúvida..."
                       required
+                      minlength="10"
                     ></textarea>
-                    <div class="invalid-feedback">Escreva uma mensagem com pelo menos 10 caracteres.</div>
+                    @if (contactSubmitted && !isContactMessageValid()) {
+                      <div class="invalid-feedback d-block">Escreva uma mensagem com pelo menos 10 caracteres.</div>
+                    }
                   </div>
 
                   <div class="col-12 pt-1">
@@ -517,7 +581,7 @@
             <span>GAME HQ</span>
           </div>
           <p class="small mb-0">
-            &copy; <span id="currentYear"></span> GAME HQ Eletrônicos e Universo Gamer. Todos os direitos reservados.
+            &copy; <span id="currentYear">{{ currentYear }}</span> GAME HQ Eletrônicos e Universo Gamer. Todos os direitos reservados.
           </p>
         </div>
         <div class="col-md-6 text-center text-md-end">
@@ -535,22 +599,75 @@
   <!-- ========================================================================
        7. OFFCANVAS DO CARRINHO DE COMPRAS (BOOTSTRAP 5)
        ======================================================================== -->
+  @if (cartOpen) {
+    <div class="offcanvas-backdrop fade show" (click)="cartOpen = false"></div>
+  }
   <div
     class="offcanvas offcanvas-end"
+    [class.show]="cartOpen"
     tabindex="-1"
     id="cartOffcanvas"
     aria-labelledby="cartOffcanvasLabel"
+    [attr.aria-hidden]="!cartOpen"
+    [attr.aria-modal]="cartOpen ? 'true' : null"
+    [attr.role]="cartOpen ? 'dialog' : null"
     style="width: 420px; max-width: 100vw;"
   >
     <div class="offcanvas-header text-white" style="background-color: #0B0E14;">
       <h2 class="offcanvas-title h5 fw-bold" id="cartOffcanvasLabel">Carrinho de Compras</h2>
-      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Fechar carrinho"></button>
+      <button type="button" class="btn-close btn-close-white" (click)="cartOpen = false" aria-label="Fechar carrinho"></button>
     </div>
 
     <div class="offcanvas-body d-flex flex-column justify-content-between p-0">
       <!-- Lista de itens no carrinho -->
       <div id="cartItemsContainer" class="p-3 overflow-auto flex-grow-1">
-        <!-- Preenchido via JavaScript -->
+        @if (cart.length === 0) {
+          <div class="text-center py-5 px-3">
+            <p class="fw-semibold mb-1" style="color: #0B0E14;">Seu carrinho está vazio</p>
+            <p class="small text-muted mb-0">
+              Adicione computadores, notebooks, smartphones ou jogos do catálogo para continuar.
+            </p>
+          </div>
+        } @else {
+          @for (item of cart; track item.product.id) {
+            <div class="d-flex gap-3 pb-3 mb-3 border-bottom align-items-center">
+              <img
+                [src]="item.product.image"
+                [alt]="item.product.name"
+                class="rounded-2 border flex-shrink-0"
+                style="width: 64px; height: 64px; object-fit: cover;"
+                (error)="onImageError($event)"
+              />
+              <div class="flex-grow-1 min-w-0">
+                <div class="fw-bold small text-truncate" style="color: #0B0E14;">{{ item.product.name }}</div>
+                <div class="small text-muted mb-2">{{ formatCurrency(item.product.price) }} cada</div>
+                <div class="d-flex align-items-center justify-content-between">
+                  <div class="btn-group btn-group-sm" role="group" aria-label="Alterar quantidade">
+                    <button
+                      type="button"
+                      class="btn btn-outline-secondary px-2"
+                      (click)="updateCartQuantity(item.product.id, -1)"
+                      aria-label="Diminuir quantidade"
+                    >−</button>
+                    <span class="btn btn-light disabled fw-bold text-dark px-2">{{ item.quantity }}</span>
+                    <button
+                      type="button"
+                      class="btn btn-outline-secondary px-2"
+                      (click)="updateCartQuantity(item.product.id, 1)"
+                      aria-label="Aumentar quantidade"
+                    >+</button>
+                  </div>
+                  <button
+                    type="button"
+                    class="btn btn-link btn-sm text-decoration-none p-0 fw-semibold"
+                    style="color: #EF4444;"
+                    (click)="removeFromCart(item.product.id)"
+                  >Remover</button>
+                </div>
+              </div>
+            </div>
+          }
+        }
       </div>
 
       <!-- Resumo financeiro, cupom e finalização -->
@@ -563,31 +680,52 @@
               type="text"
               id="couponInput"
               class="form-control text-uppercase"
+              name="coupon"
+              [(ngModel)]="couponInput"
               placeholder="Ex: GAME10"
               aria-label="Código do cupom de desconto"
             />
-            <button type="button" id="applyCouponBtn" class="btn btn-ghq-blue">Aplicar</button>
+            <button type="button" id="applyCouponBtn" class="btn btn-ghq-blue" (click)="applyCoupon()">Aplicar</button>
           </div>
-          <div id="couponFeedback" class="small mt-1"></div>
+          @if (couponFeedback) {
+            <div
+              id="couponFeedback"
+              class="small mt-1"
+              [class.text-success]="couponApplied"
+              [class.text-danger]="!couponApplied"
+            >{{ couponFeedback }}</div>
+          }
         </div>
 
         <div class="d-flex justify-content-between small text-muted mb-1">
           <span>Subtotal</span>
-          <span id="cartSubtotal">R$ 0,00</span>
+          <span id="cartSubtotal">{{ formatCurrency(subtotal) }}</span>
         </div>
-        <div id="discountRow" class="d-flex justify-content-between small fw-semibold mb-1 d-none" style="color: #10B981;">
-          <span>Desconto (GAME10 — 10%)</span>
-          <span id="cartDiscount">- R$ 0,00</span>
-        </div>
+        @if (discount > 0) {
+          <div id="discountRow" class="d-flex justify-content-between small fw-semibold mb-1" style="color: #10B981;">
+            <span>Desconto (GAME10 — 10%)</span>
+            <span id="cartDiscount">- {{ formatCurrency(discount) }}</span>
+          </div>
+        }
         <div class="d-flex justify-content-between fw-bold fs-5 border-top pt-2 mb-3" style="color: #0B0E14;">
           <span>Total</span>
-          <span id="cartTotal">R$ 0,00</span>
+          <span id="cartTotal">{{ formatCurrency(total) }}</span>
         </div>
 
         <!-- Feedback visual ao finalizar compra -->
-        <div id="checkoutFeedback" class="alert alert-success py-2 px-3 small d-none mb-2" role="alert"></div>
+        @if (checkoutFeedback) {
+          <div id="checkoutFeedback" class="alert alert-success py-2 px-3 small mb-2" role="alert">
+            {{ checkoutFeedback }}
+          </div>
+        }
 
-        <button type="button" id="checkoutBtn" class="btn btn-ghq-green w-100 py-2.5" disabled>
+        <button
+          type="button"
+          id="checkoutBtn"
+          class="btn btn-ghq-green w-100 py-2"
+          [disabled]="cart.length === 0"
+          (click)="checkout()"
+        >
           Finalizar Pedido
         </button>
       </div>
@@ -597,43 +735,74 @@
   <!-- ========================================================================
        8. MODAL DE DETALHES RÁPIDOS DO PRODUTO (BOOTSTRAP 5)
        ======================================================================== -->
-  <div class="modal fade" id="productDetailModal" tabindex="-1" aria-labelledby="productModalTitle" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div class="modal-content border-0 rounded-4 overflow-hidden">
-        <div class="modal-header text-white" style="background-color: #0B0E14;">
-          <h2 class="modal-title h5 fw-bold" id="productModalTitle">Especificações Técnicas</h2>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar janela"></button>
-        </div>
-        <div class="modal-body p-4" id="productModalBody">
-          <!-- Conteúdo preenchido dinamicamente via JavaScript -->
+  @if (selectedProduct; as product) {
+    <div class="modal-backdrop fade show" (click)="selectedProduct = null"></div>
+    <div class="modal fade show d-block" id="productDetailModal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="productModalTitle">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 overflow-hidden">
+          <div class="modal-header text-white" style="background-color: #0B0E14;">
+            <h2 class="modal-title h5 fw-bold" id="productModalTitle">{{ product.name }}</h2>
+            <button type="button" class="btn-close btn-close-white" (click)="selectedProduct = null" aria-label="Fechar janela"></button>
+          </div>
+          <div class="modal-body p-4" id="productModalBody">
+            <div class="row g-4 align-items-center">
+              <div class="col-md-5">
+                <div class="rounded-3 overflow-hidden border" style="background-color: #F8F9FA;">
+                  <img
+                    [src]="product.image"
+                    [alt]="product.name"
+                    class="w-100"
+                    style="height: 240px; object-fit: cover;"
+                    (error)="onImageError($event)"
+                  />
+                </div>
+              </div>
+              <div class="col-md-7">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                  <span [class.badge-offer]="product.badgeType === 'offer'" [class.badge-stock]="product.badgeType === 'stock'">
+                    {{ product.badgeText }}
+                  </span>
+                  <span class="small fw-semibold" style="color: #0055FF;">{{ product.category }}</span>
+                </div>
+                <p class="text-muted small mb-3">{{ product.fullDescription }}</p>
+                <h3 class="h6 fw-bold mb-2" style="color: #0B0E14;">Ficha Técnica Completa:</h3>
+                <ul class="small ps-3 mb-3" style="color: #1F2937;">
+                  @for (spec of product.specsList; track spec) {
+                    <li class="mb-1">{{ spec }}</li>
+                  }
+                </ul>
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 pt-3 border-top">
+                  <div>
+                    @if (product.oldPrice) {
+                      <span class="small text-muted text-decoration-line-through d-block">{{ formatCurrency(product.oldPrice) }}</span>
+                    }
+                    <span class="fs-4 fw-bold" style="color: #0B0E14;">{{ formatCurrency(product.price) }}</span>
+                  </div>
+                  <button type="button" class="btn btn-ghq-green px-4 py-2" (click)="addToCart(product)">
+                    Adicionar ao Carrinho
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+  }
 
   <!-- ========================================================================
        9. TOAST DISCRETO DE CONFIRMAÇÃO (NÃO BLOQUEANTE)
        ======================================================================== -->
-  <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1080;">
-    <div id="actionToast" class="toast ghq-toast align-items-center border-0" role="status" aria-live="polite" aria-atomic="true">
-      <div class="d-flex">
-        <div class="toast-body d-flex align-items-center gap-2">
-          <span class="d-inline-block rounded-circle" style="width: 10px; height: 10px; background-color: #10B981;"></span>
-          <span id="toastMessage">Produto adicionado ao carrinho.</span>
+  @if (toastMessage) {
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1080;">
+      <div id="actionToast" class="toast show ghq-toast align-items-center border-0" role="status" aria-live="polite" aria-atomic="true">
+        <div class="d-flex">
+          <div class="toast-body d-flex align-items-center gap-2">
+            <span class="d-inline-block rounded-circle" style="width: 10px; height: 10px; background-color: #10B981;"></span>
+            <span id="toastMessage">{{ toastMessage }}</span>
+          </div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" (click)="dismissToast()" aria-label="Fechar aviso"></button>
         </div>
-        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Fechar aviso"></button>
       </div>
     </div>
-  </div>
-
-  <!-- Bootstrap 5.3 Bundle JS (inclui Popper) -->
-  <script
-    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-    crossorigin="anonymous"
-  ></script>
-
-  
-  <script src="js/script.js"></script>
-</body>
-</html>
+  }
